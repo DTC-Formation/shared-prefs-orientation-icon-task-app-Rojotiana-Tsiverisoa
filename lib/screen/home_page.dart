@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:todo_list/colors/my_colors.dart';
 
@@ -14,12 +15,38 @@ class _HomePageState extends State<HomePage> {
   var createTodoController = TextEditingController();
   final GlobalKey<FormState> _createTodoFormKey = GlobalKey<FormState>();
 
+  List<String> todos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedData();
+  }
+
+  _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      todos = prefs.getStringList('todos') ?? [];
+    });
+  }
+
+  _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setStringList('todos', todos);
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
 
     void createTodo(BuildContext context) {
       if (_createTodoFormKey.currentState!.validate()) {
+        setState(() {
+          todos.add(createTodoController.text);
+          createTodoController.clear();
+          _saveData();
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Item added successfully!'),
@@ -95,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                                   border: const OutlineInputBorder(),
                                   suffixIcon: IconButton(
                                     onPressed: () => createTodo(context),
-                                    icon: const Icon(Icons.add),
+                                    icon: const Icon(Icons.add, size: 30),
                                   ),
                                 ),
                                 validator: (String? value) {
@@ -114,48 +141,95 @@ class _HomePageState extends State<HomePage> {
                             surfaceTintColor: Colors.white,
                             child: SizedBox(
                               width: size.width,
-                              height: size.height / 1.5,
-                              child: ListView(
-                                children: [
-                                  ListTile(
-                                    leading: Checkbox(
-                                      checkColor: Colors.white,
-                                      value: isChecked,
-                                      onChanged: (bool? value) {
-                                        setState(() {
-                                          isChecked = value!;
-                                        });
-                                      },
-                                    ),
-                                    title: const Text(
-                                      'My to do ...',
-                                      style: TextStyle(
-                                        fontSize: 14,
+                              height: size.height / 1.3,
+                              // child: ListView(
+                              //   children: [
+                              //     ListTile(
+                              //       leading: Checkbox(
+                              //         checkColor: Colors.white,
+                              //         value: isChecked,
+                              //         onChanged: (bool? value) {
+                              //           setState(() {
+                              //             isChecked = value!;
+                              //           });
+                              //         },
+                              //       ),
+                              //       title: const Text(
+                              //         'My to do ...',
+                              //         style: TextStyle(
+                              //           fontSize: 14,
+                              //         ),
+                              //       ),
+                              //       trailing: Wrap(
+                              //         children: [
+                              //           IconButton(
+                              //             icon: const Icon(
+                              //               Icons.edit,
+                              //               color: MyColors.c1,
+                              //             ),
+                              //             tooltip: 'Edit',
+                              //             onPressed: () {},
+                              //           ),
+                              //           IconButton(
+                              //             icon: const Icon(
+                              //               Icons.delete,
+                              //               color: MyColors.c2,
+                              //             ),
+                              //             tooltip: 'Delete',
+                              //             onPressed: () {},
+                              //           ),
+                              //         ],
+                              //       ),
+                              //     ),
+                              //     const Divider(height: 0),
+                              //   ],
+                              // ),
+                              child: ListView.builder(
+                                itemCount: todos.length,
+                                itemBuilder: (context, index) {
+                                  return Column(
+                                    children: [
+                                      ListTile(
+                                        leading: Checkbox(
+                                          checkColor: Colors.white,
+                                          value: isChecked,
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              isChecked = value!;
+                                            });
+                                          },
+                                        ),
+                                        title: Text(
+                                          todos[index],
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        trailing: Wrap(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: MyColors.c1,
+                                              ),
+                                              tooltip: 'Edit',
+                                              onPressed: () {},
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: MyColors.c2,
+                                              ),
+                                              tooltip: 'Delete',
+                                              onPressed: () {},
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    trailing: Wrap(
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.edit,
-                                            color: MyColors.c1,
-                                          ),
-                                          tooltip: 'Edit',
-                                          onPressed: () {},
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: MyColors.c2,
-                                          ),
-                                          tooltip: 'Delete',
-                                          onPressed: () {},
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Divider(height: 0),
-                                ],
+                                      const Divider(height: 0),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                           ),
