@@ -56,6 +56,20 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
+    void deleteTodo(BuildContext context, int index) {
+      setState(() {
+        todos.removeAt(index);
+        _saveData();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Item deleted successfully!'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -221,7 +235,8 @@ class _HomePageState extends State<HomePage> {
                                                 color: MyColors.c2,
                                               ),
                                               tooltip: 'Delete',
-                                              onPressed: () {},
+                                              onPressed: () =>
+                                                  deleteTodo(context, index),
                                             ),
                                           ],
                                         ),
