@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:todo_list/colors/my_colors.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -8,9 +10,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool isChecked = false;
+  var createTodoController = TextEditingController();
+  final GlobalKey<FormState> _createTodoFormKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+
+    void createTodo(BuildContext context) {
+      if (_createTodoFormKey.currentState!.validate()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Item added successfully!'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
 
     return SafeArea(
       child: Scaffold(
@@ -64,25 +81,30 @@ class _HomePageState extends State<HomePage> {
                               top: 5,
                               bottom: 5,
                             ),
-                            child: TextField(
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: Colors.white,
-                                hintText: 'Create a new todo ...',
-                                border: const OutlineInputBorder(),
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    print('Hello');
-                                  },
-                                  icon: const Icon(Icons.add),
+                            child: Form(
+                              key: _createTodoFormKey,
+                              child: TextFormField(
+                                controller: createTodoController,
+                                decoration: InputDecoration(
+                                  errorStyle: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: 'Create a new todo ...',
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    onPressed: () => createTodo(context),
+                                    icon: const Icon(Icons.add),
+                                  ),
                                 ),
+                                validator: (String? value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter some text';
+                                  }
+                                  return null;
+                                },
                               ),
-                              // validator: (String? value) {
-                              //   if (value == null || value.isEmpty) {
-                              //     return 'Please enter some text';
-                              //   }
-                              //   return null;
-                              // },
                             ),
                           ),
                           Card(
@@ -92,7 +114,49 @@ class _HomePageState extends State<HomePage> {
                             surfaceTintColor: Colors.white,
                             child: SizedBox(
                               width: size.width,
-                              child: const Text('Eating'),
+                              height: size.height / 1.5,
+                              child: ListView(
+                                children: [
+                                  ListTile(
+                                    leading: Checkbox(
+                                      checkColor: Colors.white,
+                                      value: isChecked,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          isChecked = value!;
+                                        });
+                                      },
+                                    ),
+                                    title: const Text(
+                                      'My to do ...',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    trailing: Wrap(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: MyColors.c1,
+                                          ),
+                                          tooltip: 'Edit',
+                                          onPressed: () {},
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: MyColors.c2,
+                                          ),
+                                          tooltip: 'Delete',
+                                          onPressed: () {},
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Divider(height: 0),
+                                ],
+                              ),
                             ),
                           ),
                         ],
